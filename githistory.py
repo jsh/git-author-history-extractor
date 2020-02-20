@@ -4,6 +4,7 @@
 
 """
 
+import csv
 import sys
 import logging 
 import os.path
@@ -110,7 +111,7 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
 
         if not author:
             # We are initialising this author
-            author = AuthorHistory(name, email, repo_name)
+            author = AuthorHistory(repo_name, name, email)
             authors[email] = author
             author.first_commit_at = datetime.fromtimestamp(c.committed_date) # Is UNIX time
             author.first_commit_message = c.message
@@ -168,15 +169,21 @@ def output_author_data(history: FullHistory):
 
     table = []
     for author in history.all_author_histories.values():
-        table.append([author.name, author.email, author.first_commit_at, author.last_commit_at, author.commit_count])
+        repos = ", ".join([h.repo for h in author.histories.values()])
+        table.append([author.name, author.email, author.first_commit_at, author.last_commit_at, author.commit_count, repos])
 
     # Sort by the first commit
     table = sorted(table, key=lambda row: row[2])
-        
-    print(tabulate(table, headers=["Email", "Name", "First commit", "Last commit", "Commit count"]))
+    
+    headers = ["Email", "Name", "First commit", "Last commit", "Commit count", "Repos"]
+    print(tabulate(table, headers=headers))
     print()
 
-        
+    # Export also as CSV
+    with open('authors.csv', 'w', newline='') as out:
+        writer = csv.writer(out)
+        writer.writerow(headers)
+        writer.writerows(table)
 
 
 def main():
