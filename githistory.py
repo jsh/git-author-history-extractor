@@ -62,6 +62,8 @@ class RepositoryHistory:
     """History of a single repo"""
     name: str
     commit_count: int = 0
+    first_commit_at: datetime = None
+    last_commit_at: datetime = None
     
     #: email -> history maps
     authors: Dict[str, AuthorHistory] = field(default_factory=dict)
@@ -101,6 +103,10 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
 
     # This will iterate commits from firs to last
     all_commits = list(r.iter_commits('master'))
+    all_commits.reverse()
+
+    history.first_commit_at = datetime.fromtimestamp(all_commits[0].committed_date)
+
     for c in all_commits:  # type: Commit
         # https://gitpython.readthedocs.io/en/stable/reference.html#git.objects.commit.Commit
         # https://stackoverflow.com/questions/58550252/how-to-get-commit-author-name-and-email-with-gitpython
@@ -124,6 +130,8 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
 
         author.commit_count += 1
         history.commit_count += 1
+
+    history.last_commit_at = datetime.fromtimestamp(c.committed_date)
         
     return history
 
@@ -186,10 +194,35 @@ def output_author_data(history: FullHistory):
         writer.writerows(table)
 
 
+def output_repository_data(history: FullHistory):
+    """Write out information about authors"""
+
+    print("All repositories")
+    print("*" * 80)
+
+    table = []
+    for repo in history.repos:
+        table.append([repo.name, repo.first_commit_at, repo.last_commit_at, repo.commit_count])
+
+    # Sort by the last commit
+    table = sorted(table, key=lambda row: row[2])
+    
+    headers = ["Repository", "First commit", "Last commit", "Commit count"]
+    print(tabulate(table, headers=headers))
+    print()
+
+    # Export also as CSV
+    with open('repos.csv', 'w', newline='') as out:
+        writer = csv.writer(out)
+        writer.writerow(headers)
+        writer.writerows(table)
+
+
 def main():
     """Entry point"""
     history = mine_data(sys.argv[1:])
     output_author_data(history)
+    output_repository_data(history)
 
 if __name__ == "__main__":
     main()
