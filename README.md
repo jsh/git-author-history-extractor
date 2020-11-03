@@ -6,10 +6,10 @@ Travels across multiple repositories of git logs to see who was working on the r
 
 Python 3.8+ required.
 
-You need to install GitHistory package first
+You need to install tabulate package first
 
 ```bash
-    python -m pip install GitHistory tabulate
+    python -m pip install tabulate
 ```
 
 Usage
@@ -20,7 +20,7 @@ Check out all git repositories under a single folder.
 Then run:
 
 ```bash
-python githistory.py path_to_repos/*
+githistory.py path_to_repos/*
 ```
 
 It will 

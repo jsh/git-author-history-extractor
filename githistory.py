@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-A module docstring.
+Author history for a set of git repos.
 """
+# pylint:disable=too-many-instance-attributes
 
 import csv
 import logging
@@ -13,7 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from git import Repo
+from git import Repo  # type: ignore
+from git.objects.commit import Commit  # type: ignore
 from tabulate import tabulate
 
 # If logging is set to debug you will see individual git commands in the console
@@ -28,10 +30,10 @@ class AuthorHistory:
     repo: str
     name: str
     email: str
-    first_commit_at: datetime = None
-    first_commit_message: str = None
-    last_commit_at: datetime = None
-    last_commit_message: str = None
+    first_commit_at: Optional[datetime] = None
+    first_commit_message: Optional[str] = None
+    last_commit_at: Optional[datetime] = None
+    last_commit_message: Optional[str] = None
     commit_count: int = 0
 
 
@@ -47,12 +49,12 @@ class AuthorHistoryOverMultipleRepos:
 
     @property
     def email(self):
-        """Function docstring."""
+        """Next email."""
         return next(iter(self.histories.values())).email
 
     @property
     def name(self):
-        """Function docstring."""
+        """Next name."""
         return next(iter(self.histories.values())).name
 
 
@@ -62,8 +64,8 @@ class RepositoryHistory:
 
     name: str
     commit_count: int = 0
-    first_commit_at: datetime = None
-    last_commit_at: datetime = None
+    first_commit_at: Optional[datetime] = None
+    last_commit_at: Optional[datetime] = None
 
     #: email -> history maps
     authors: Dict[str, AuthorHistory] = field(default_factory=dict)
@@ -114,7 +116,7 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
         name = commit.author.name
         email = commit.author.email
 
-        author = authors.get(email)  # type: AuthorHistory
+        author = authors.get(email)  # type: Optional[AuthorHistory]
 
         if not author:
             # We are initialising this author
@@ -144,7 +146,9 @@ def mine_authors_over_repos(
 ) -> Dict[str, AuthorHistoryOverMultipleRepos]:
     """Create a history info spanning over multiple repos."""
 
-    all_author_histories = defaultdict(AuthorHistoryOverMultipleRepos)
+    all_author_histories = defaultdict(
+        AuthorHistoryOverMultipleRepos
+    )  # type: Dict[str, AuthorHistoryOverMultipleRepos]
     for repo in history.repos:
         for email, hist in repo.authors.items():
             all_history = all_author_histories[email]

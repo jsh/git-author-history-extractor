@@ -1,0 +1,14 @@
+[pylama]
+linters = pydocstyle,pycodestyle,pylint,mypy,mccabe
+
+[pylama:pycodestyle]
+overgeneral_exceptions=Exception
+
+[pylama:pylint]
+persistent = yes
+reports=yes
+ignore = fixme
+ignore = unsubscriptable-object
+
+[pylama:pydocstyle]
+ignore = D213  # mutually exclusive with D212
