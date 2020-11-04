@@ -12,6 +12,7 @@ bandit = "*"
 mypy = "*"
 pylama = "*"
 pylama-pylint = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.9"
