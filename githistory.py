@@ -11,6 +11,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
+from operator import itemgetter
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -142,7 +143,7 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
 
 
 def mine_authors_over_repos(
-    history: List[RepositoryHistory],
+    history: FullHistory,
 ) -> Dict[str, AuthorHistoryOverMultipleRepos]:
     """Create a history info spanning over multiple repos."""
 
@@ -152,12 +153,14 @@ def mine_authors_over_repos(
     for repo in history.repos:
         for email, hist in repo.authors.items():
             all_history = all_author_histories[email]
-            all_history.first_commit_at = min(
-                all_history.first_commit_at, hist.first_commit_at
-            )
-            all_history.last_commit_at = max(
-                all_history.last_commit_at, hist.last_commit_at
-            )
+            if hist.first_commit_at:
+                all_history.first_commit_at = min(
+                    all_history.first_commit_at, hist.first_commit_at
+                )
+            if hist.last_commit_at:
+                all_history.last_commit_at = max(
+                    all_history.last_commit_at, hist.last_commit_at
+                )
             all_history.commit_count += hist.commit_count
             all_history.histories[repo.name] = hist
             print("set history ", repo.name, hist)
@@ -229,7 +232,7 @@ def output_repository_data(history: FullHistory):
         )
 
     # Sort by the last commit
-    table = sorted(table, key=lambda row: row[2])
+    table = sorted(table, key=itemgetter(2))
 
     headers = ["Repository", "First commit", "Last commit", "Commit count"]
     print(tabulate(table, headers=headers))
