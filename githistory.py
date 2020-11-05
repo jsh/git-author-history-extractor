@@ -111,13 +111,15 @@ def extract_history(path: Path) -> Optional[RepositoryHistory]:
 
     history.first_commit_at = datetime.fromtimestamp(commits[0].committed_date)
 
-    for commit in commits:  # type: Commit
+    commit: Commit
+    for commit in commits:
         # https://gitpython.readthedocs.io/en/stable/reference.html#git.objects.commit.Commit
         # https://stackoverflow.com/questions/58550252/how-to-get-commit-author-name-and-email-with-gitpython
         name = commit.author.name
         email = commit.author.email
 
-        author = authors.get(email)  # type: Optional[AuthorHistory]
+        author: Optional[AuthorHistory]
+        author = authors.get(email)
 
         if not author:
             # We are initialising this author
@@ -147,9 +149,9 @@ def mine_authors_over_repos(
 ) -> Dict[str, AuthorHistoryOverMultipleRepos]:
     """Create a history info spanning over multiple repos."""
 
-    all_author_histories = defaultdict(
-        AuthorHistoryOverMultipleRepos
-    )  # type: Dict[str, AuthorHistoryOverMultipleRepos]
+    all_author_histories: Dict[str, AuthorHistoryOverMultipleRepos]
+
+    all_author_histories = defaultdict(AuthorHistoryOverMultipleRepos)
     for repo in history.repos:
         for email, hist in repo.authors.items():
             all_history = all_author_histories[email]
